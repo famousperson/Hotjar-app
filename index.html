@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotjar Heatmap Analyzer</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+            <h1 class="text-2xl font-bold text-gray-900">Hotjar Heatmap Analyzer</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <!-- Input Section -->
+        <section class="mb-8 bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Input Data</h2>
+            
+            <!-- URL Input -->
+            <div class="mb-6">
+                <label for="websiteUrl" class="block text-sm font-medium text-gray-700 mb-2">Website URL</label>
+                <div class="flex gap-2">
+                    <input type="url" id="websiteUrl" 
+                           class="flex-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                           placeholder="https://example.com">
+                    <button id="fetchWebsiteBtn" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Fetch Code
+                    </button>
+                </div>
+                <p id="urlError" class="mt-2 text-sm text-red-600 hidden"></p>
+            </div>
+
+            <!-- File Upload -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hotjar Data (CSV)</label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-500 transition-colors duration-200"
+                     id="dropZone">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4-4m4-4h8m-4-4v8m-12 4h.02" 
+                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                <span>Upload a file</span>
+                                <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".csv">
+                            </label>
+                            <p class="pl-1">or drag and drop</p>
+                        </div>
+                        <p class="text-xs text-gray-500">CSV file containing Hotjar heatmap data</p>
+                    </div>
+                </div>
+                <p id="fileError" class="mt-2 text-sm text-red-600 hidden"></p>
+            </div>
+        </section>
+
+        <!-- Analysis Section (initially hidden) -->
+        <section id="analysisSection" class="hidden">
+            <div class="bg-white rounded-lg shadow p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Analysis Results</h2>
+                
+                <!-- Filters -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter Results</label>
+                    <div class="flex gap-2">
+                        <button data-filter="all" 
+                                class="filter-btn px-4 py-2 text-sm font-medium rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
+                            All
+                        </button>
+                        <button data-filter="problem" 
+                                class="filter-btn px-4 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-indigo-100">
+                            Problems
+                        </button>
+                        <button data-filter="success" 
+                                class="filter-btn px-4 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-indigo-100">
+                            Successes
+                        </button>
+                        <button data-filter="normal" 
+                                class="filter-btn px-4 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-indigo-100">
+                            Normal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Container -->
+                <div id="resultsContainer" class="space-y-6">
+                    <!-- Results will be dynamically inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                    <p class="mt-4 text-gray-700" id="loadingText">Processing...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 text-sm">
+                Hotjar Heatmap Analyzer - Analyze your website's user behavior with AI-powered insights
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="js/main.js" type="module"></script>
+</body>
+</html>
