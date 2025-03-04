@@ -8,6 +8,10 @@ A web application that analyzes Hotjar heatmap data in relation to website code,
 - Hotjar CSV data parsing
 - AI-powered analysis using Google's Gemini API
 - Interactive results display with filtering
+- Visual element previews and context
+  * Element screenshots for easy identification
+  * Visual DOM path navigation
+  * Element position and styling context
 - Responsive design
 
 ## Setup
